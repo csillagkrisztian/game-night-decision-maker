@@ -6,25 +6,20 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Checkbox from "@mui/material/Checkbox";
 import Avatar from "@mui/material/Avatar";
+import GameSelect from "./AddListItem";
+import PropTypes from "prop-types";
 
-export default function CheckboxListSecondary() {
-  const [list, setList] = useState([
-    { avatar: null, name: "Rising Sun", checked: false },
-    { avatar: null, name: "Blood Rage", checked: false },
-  ]);
+export default function ListSelection({ fillSegments }) {
+  const [list, setList] = useState([]);
 
   useEffect(() => {
-    var req = new XMLHttpRequest();
-    req.open(
-      "GET",
-      "http://localhost:8080/https://www.boardgamegeek.com/xmlapi2/thing?id=013",
-      false
-    );
-    req.send(null);
-    console.log(req.responseText);
-  }, []);
+    console.log("list", list);
+    fillSegments(list);
+  }, [list]);
 
-  const handleToggle = (value) => () => {
+  console.log(list);
+
+  const handleToggle = (value) => {
     const currentIndex = list.indexOf(value);
     const newList = [...list];
 
@@ -37,15 +32,31 @@ export default function CheckboxListSecondary() {
       dense
       sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}
     >
+      <ListItem>
+        <GameSelect
+          updateList={(newItem) => {
+            setList((state) => [
+              ...state,
+              {
+                ...newItem,
+                text: newItem.names.find((name) => name.type === "primary")
+                  .value,
+                checked: false,
+              },
+            ]);
+          }}
+        />
+        <div></div>
+      </ListItem>
       {list.map((value) => {
-        const labelId = `checkbox-list-secondary-label-${value}`;
+        const labelId = `checkbox-list-secondary-label-${value.id}`;
         return (
           <ListItem
-            key={value}
+            key={value.id}
             secondaryAction={
               <Checkbox
                 edge="end"
-                onChange={(event) => handleToggle(event.target.value)}
+                onChange={() => handleToggle(value)}
                 checked={value.checked}
                 inputProps={{ "aria-labelledby": labelId }}
               />
@@ -54,12 +65,14 @@ export default function CheckboxListSecondary() {
           >
             <ListItemButton>
               <ListItemAvatar>
-                <Avatar
-                  alt={`Avatar n°${value + 1}`}
-                  src={`/static/images/avatar/${value + 1}.jpg`}
-                />
+                <Avatar src={value.thumbnail} />
               </ListItemAvatar>
-              <ListItemText id={labelId} primary={`Line item ${value + 1}`} />
+              <ListItemText
+                id={labelId}
+                primary={`${
+                  value.names.find((name) => name.type === "primary").value
+                }`}
+              />
             </ListItemButton>
           </ListItem>
         );
@@ -67,3 +80,7 @@ export default function CheckboxListSecondary() {
     </List>
   );
 }
+
+ListSelection.propTypes = {
+  fillSegments: PropTypes.func.isRequired,
+};

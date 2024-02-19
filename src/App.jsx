@@ -1,38 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import Wheel from "react-decision-wheel";
+import Wheel from "../src/components/Wheel/Wheel";
 import NavBar from "./components/NavBar";
 
 import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import ListSelection from "./components/ListSelection";
+import ListSelection from "./components/ListSelection/ListSelection";
 
 function App() {
-  const [count, setCount] = useState(0);
-  const [color, setColor] = useState("");
+  const wheelRef = useRef();
+  const [segments, setSegments] = useState([]);
 
-  const handleChange = (event) => {
-    setColor(event.target.value);
+  useEffect(() => {
+    if (segments.length) redrawWheel(segments);
+  }, [segments]);
+
+  const spin = () => {
+    wheelRef.current.spin();
   };
-  const segments = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
-  const segColors = [
-    "#EE4040",
-    "#F0CF50",
-    "#815CD1",
-    "#3DA5E0",
-    "#34A24F",
-    "#F9AA1F",
-    "#EC3F3F",
-    "#FF9000",
-    "#3DA5E0",
-    "#34A24F",
-    "#F9AA1F",
-    "#EC3F3F",
-    "#FF9000",
-  ];
+  const redrawWheel = (newSegments) => {
+    wheelRef.current.redraw(newSegments);
+  };
 
   const onFinished = (winner) => {
     //console.log(winner);
@@ -44,12 +34,10 @@ function App() {
       <Grid container style={{ width: "100%" }}>
         <Grid item xs={12} sm={7}>
           <Wheel
+            ref={wheelRef}
             segments={segments}
-            segColors={segColors}
-            onFinished={onFinished}
-            upDuration={1}
+            onFinished={(winner) => onFinished(winner)}
             isOnlyOnce={false}
-            downDuration={800}
             canvasStyle={{ margin: "2rem", marginTop: "5rem" }}
           ></Wheel>
         </Grid>
@@ -61,7 +49,11 @@ function App() {
             style={{ width: "100%", height: "100%" }}
           >
             <FormControl>
-              <ListSelection></ListSelection>
+              <ListSelection
+                fillSegments={(segments) => {
+                  setSegments(() => [...segments]);
+                }}
+              ></ListSelection>
             </FormControl>
           </Box>
         </Grid>
